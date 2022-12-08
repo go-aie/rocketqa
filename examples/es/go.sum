@@ -1,0 +1,9 @@
+github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c h1:onA2RpIyeCPvYAj1LFYiiMTrSpqVINWMfYFRS7lofJs=
+github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c/go.mod h1:87Tcz8IVNe6rVSLdBux1o/PEItLtyabHU3naC7IoqKI=
+github.com/elastic/go-elasticsearch/v8 v8.5.0 h1:p6j6RFztHvkIg0NaUlfR0OnRmVdCG6Zyfy+bPKMpKp4=
+github.com/elastic/go-elasticsearch/v8 v8.5.0/go.mod h1:Usvydt+x0dv9a1TzEUaovqbJor8rmOHy5dSmPeMAE2k=
+github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
+github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi v0.0.0-20221116023434-3fa7a736e325 h1:TayW4dAkriSrcpKdWqgumPjojQeWncjpfLW35BvP/k8=
+github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi v0.0.0-20221116023434-3fa7a736e325/go.mod h1:YldWEunlZgagHtfynS8SGmgCARdMWB+SeK7EtCdWFm8=
+golang.org/x/exp v0.0.0-20221207211629-99ab8fa1c11f h1:90Jq/vvGVDsqj8QqCynjFw9MCerDguSMODLYII416Y8=
+golang.org/x/exp v0.0.0-20221207211629-99ab8fa1c11f/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
