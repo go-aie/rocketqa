@@ -6,11 +6,11 @@ Go Inference API for [RocketQA][1].
 ## Installation
 
 1. Install [Paddle Inference Go API][2]
-2. Generate [the inference models](cli#save-inference-model)
+2. Generate [the inference models](cli/README.md#save-inference-model)
 
     ```bash
-    $ python3 cli.py save zh_dureader_de_v2 --out-prefix=testdata/zh_dureader_de_v2
-    $ python3 cli.py save zh_dureader_ce_v2 --out-prefix=testdata/zh_dureader_ce_v2
+    $ python3 cli.py save zh_dureader_de_v2 --out-path=testdata/zh_dureader_de_v2
+    $ python3 cli.py save zh_dureader_ce_v2 --out-path=testdata/zh_dureader_ce_v2
     ```
    
 3. Install `go-rocketqa`
