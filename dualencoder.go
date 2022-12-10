@@ -106,16 +106,16 @@ func (de *DualEncoder) getInputs(dataSet []internal.Data) []internal.Tensor {
 	paraTextTypeIDs, _ = de.generator.Pad(paraTextTypeIDs)
 	paraPositionIDs, _ = de.generator.Pad(paraPositionIDs)
 
-	var inputs []internal.Tensor
-	inputs = append(inputs, internal.NewInputTensor(queryTokenIDs))
-	inputs = append(inputs, internal.NewInputTensor(queryTextTypeIDs))
-	inputs = append(inputs, internal.NewInputTensor(queryPositionIDs))
-	inputs = append(inputs, internal.NewInputTensor(queryInputMasks))
-	inputs = append(inputs, internal.NewInputTensor(paraTokenIDs))
-	inputs = append(inputs, internal.NewInputTensor(paraTextTypeIDs))
-	inputs = append(inputs, internal.NewInputTensor(paraPositionIDs))
-	inputs = append(inputs, internal.NewInputTensor(paraInputMasks))
-	return inputs
+	return []internal.Tensor{
+		internal.NewInputTensor(queryTokenIDs),
+		internal.NewInputTensor(queryTextTypeIDs),
+		internal.NewInputTensor(queryPositionIDs),
+		internal.NewInputTensor(queryInputMasks),
+		internal.NewInputTensor(paraTokenIDs),
+		internal.NewInputTensor(paraTextTypeIDs),
+		internal.NewInputTensor(paraPositionIDs),
+		internal.NewInputTensor(paraInputMasks),
+	}
 }
 
 type Vector []float32
@@ -126,11 +126,7 @@ func (v Vector) Norm() Vector {
 }
 
 func (v Vector) ToFloat64() []float64 {
-	var result []float64
-	for _, value := range v {
-		result = append(result, float64(value))
-	}
-	return result
+	return internal.Float32To64(v)
 }
 
 func newVectors(value [][]float32) []Vector {

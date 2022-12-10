@@ -21,19 +21,19 @@ func TestCrossEncoder_Rank(t *testing.T) {
 	}
 
 	tests := []struct {
-		inQueries  []string
-		inParas    []string
-		inTitles   []string
+		inQPTs     rocketqa.QPTs
 		wantScores []float32
 	}{
 		{
-			inQueries: []string{
-				"你好，世界！",
-				"Hello, World!",
-			},
-			inParas: []string{
-				"这是一段较长的文本。",
-				"This is a long paragraph.",
+			inQPTs: rocketqa.QPTs{
+				{
+					Query: "你好，世界！",
+					Para:  "这是一段较长的文本。",
+				},
+				{
+					Query: "Hello, World!",
+					Para:  "This is a long paragraph.",
+				},
 			},
 			wantScores: []float32{
 				0.05041640,
@@ -42,7 +42,7 @@ func TestCrossEncoder_Rank(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		gotScores, _ := ce.Rank(tt.inQueries, tt.inParas, tt.inTitles)
+		gotScores, _ := ce.Rank(tt.inQPTs.Q(), tt.inQPTs.P(), tt.inQPTs.T())
 		if !cmp.Equal(gotScores, tt.wantScores) {
 			diff := cmp.Diff(gotScores, tt.wantScores)
 			t.Errorf("Want - Got: %s", diff)

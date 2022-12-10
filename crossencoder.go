@@ -84,10 +84,10 @@ func (ce *CrossEncoder) getInputs(records []internal.Record) []internal.Tensor {
 	textTypeIDs, _ = ce.generator.Pad(textTypeIDs)
 	positionIDs, _ = ce.generator.Pad(positionIDs)
 
-	var inputs []internal.Tensor
-	inputs = append(inputs, internal.NewInputTensor(tokenIDs))
-	inputs = append(inputs, internal.NewInputTensor(textTypeIDs))
-	inputs = append(inputs, internal.NewInputTensor(positionIDs))
-	inputs = append(inputs, internal.NewInputTensor(inputMasks))
-	return inputs
+	return []internal.Tensor{
+		internal.NewInputTensor(tokenIDs),
+		internal.NewInputTensor(textTypeIDs),
+		internal.NewInputTensor(positionIDs),
+		internal.NewInputTensor(inputMasks),
+	}
 }

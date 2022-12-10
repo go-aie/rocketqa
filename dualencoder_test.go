@@ -14,25 +14,29 @@ func TestDualEncoder_EncodeQuery(t *testing.T) {
 	de := newDualEncoder(t)
 
 	tests := []struct {
-		inType    string
-		inQueries []string
+		inType string
+		inQPTs rocketqa.QPTs
 	}{
 		{
 			inType: "query",
-			inQueries: []string{
-				"你好，世界！",
-				"Hello, World!",
+			inQPTs: rocketqa.QPTs{
+				{
+					Query: "你好，世界！",
+				},
+				{
+					Query: "Hello, World!",
+				},
 			},
 		},
 	}
 	for _, tt := range tests {
-		for i, vector := range de.EncodeQuery(tt.inQueries) {
+		for i, vector := range de.EncodeQuery(tt.inQPTs.Q()) {
 			var gotEmb []string
 			for _, v := range vector {
 				gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
 			}
 
-			wantEmb := getEmbedding(t, tt.inType, tt.inQueries[i])
+			wantEmb := getEmbedding(t, tt.inType, tt.inQPTs[i].Query)
 			if !cmp.Equal(gotEmb, wantEmb) {
 				diff := cmp.Diff(gotEmb, wantEmb)
 				t.Errorf("Want - Got: %s", diff)
@@ -45,27 +49,30 @@ func TestDualEncoder_EncodePara(t *testing.T) {
 	de := newDualEncoder(t)
 
 	tests := []struct {
-		inType   string
-		inParas  []string
-		inTitles []string
+		inType string
+		inQPTs rocketqa.QPTs
 	}{
 		{
 			inType: "para",
-			inParas: []string{
-				"这是一段较长的文本。",
-				"This is a long paragraph.",
+			inQPTs: rocketqa.QPTs{
+				{
+					Para: "这是一段较长的文本。",
+				},
+				{
+					Para: "This is a long paragraph.",
+				},
 			},
 		},
 	}
 	for _, tt := range tests {
-		vectors, _ := de.EncodePara(tt.inParas, tt.inTitles)
+		vectors, _ := de.EncodePara(tt.inQPTs.P(), tt.inQPTs.T())
 		for i, vector := range vectors {
 			var gotEmb []string
 			for _, v := range vector {
 				gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
 			}
 
-			wantEmb := getEmbedding(t, tt.inType, tt.inParas[i])
+			wantEmb := getEmbedding(t, tt.inType, tt.inQPTs[i].Para)
 			if !cmp.Equal(gotEmb, wantEmb) {
 				diff := cmp.Diff(gotEmb, wantEmb)
 				t.Errorf("Want - Got: %s", diff)

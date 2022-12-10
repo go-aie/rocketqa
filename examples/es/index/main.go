@@ -19,11 +19,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esutil"
 )
 
-type Item struct {
-	Title string
-	Para  string
-}
-
 type Indexer struct {
 	es *elasticsearch.Client
 	de *rocketqa.DualEncoder
@@ -36,7 +31,7 @@ func NewIndexer(es *elasticsearch.Client, de *rocketqa.DualEncoder) *Indexer {
 	}
 }
 
-func (i *Indexer) Index(index string, items []Item) error {
+func (i *Indexer) Index(index string, qpts rocketqa.QPTs) error {
 	bulk, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Client: i.es,
 		Index:  index,
@@ -45,15 +40,10 @@ func (i *Indexer) Index(index string, items []Item) error {
 		return err
 	}
 
-	var paras, titles []string
-	for _, item := range items {
-		paras = append(paras, item.Para)
-		titles = append(titles, item.Title)
-	}
-	vectors, _ := i.de.EncodePara(paras, titles)
+	vectors, _ := i.de.EncodePara(qpts.P(), qpts.T())
 
 	ctx := context.Background()
-	for idx, item := range items {
+	for idx, item := range qpts {
 		vector := vectors[idx].Norm().ToFloat64()
 
 		b, err := json.Marshal(map[string]interface{}{
@@ -91,14 +81,14 @@ func (i *Indexer) Index(index string, items []Item) error {
 	return bulk.Close(ctx)
 }
 
-func getItems(dataFile string) ([]Item, error) {
+func getQPTs(dataFile string) (rocketqa.QPTs, error) {
 	file, err := os.Open(dataFile)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	var items []Item
+	var qpts rocketqa.QPTs
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -109,7 +99,7 @@ func getItems(dataFile string) ([]Item, error) {
 			continue
 		}
 
-		items = append(items, Item{
+		qpts = append(qpts, rocketqa.QPT{
 			Title: parts[0],
 			Para:  parts[1],
 		})
@@ -119,7 +109,7 @@ func getItems(dataFile string) ([]Item, error) {
 		return nil, err
 	}
 
-	return items, nil
+	return qpts, nil
 }
 
 func main() {
@@ -135,7 +125,7 @@ func main() {
 		log.Fatalf(`argument "data" is required`)
 	}
 
-	items, err := getItems(dataFile)
+	qpts, err := getQPTs(dataFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -166,7 +156,7 @@ func main() {
 	}
 
 	indexer := NewIndexer(es, de)
-	if err := indexer.Index(indexName, items); err != nil {
+	if err := indexer.Index(indexName, qpts); err != nil {
 		log.Fatal(err)
 	}
 }

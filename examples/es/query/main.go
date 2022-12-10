@@ -82,16 +82,16 @@ func (q *Querier) Search(index, query string) []*Candidate {
 }
 
 func (q *Querier) Sort(query string, candidates []*Candidate) {
-	var queries []string
-	var paras []string
-	var titles []string
+	var qpts rocketqa.QPTs
 	for _, c := range candidates {
-		queries = append(queries, query)
-		paras = append(paras, c.Para)
-		titles = append(titles, c.Title)
+		qpts = append(qpts, rocketqa.QPT{
+			Query: query,
+			Para:  c.Para,
+			Title: c.Title,
+		})
 	}
 
-	scores, _ := q.ce.Rank(queries, paras, titles)
+	scores, _ := q.ce.Rank(qpts.Q(), qpts.P(), qpts.T())
 	for i, score := range scores {
 		candidates[i].Score = score
 	}
