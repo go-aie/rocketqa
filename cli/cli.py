@@ -113,9 +113,9 @@ def save(model, out):
         batch_size=32,
     )
 
-    if isinstance(encoder, rocketqa.DualEncoder):
+    if isinstance(encoder, rocketqa.encoder.dual_encoder.DualEncoder):
         save_de_model(encoder, out)
-    elif isinstance(encoder, rocketqa.CrossEncoder):
+    elif isinstance(encoder, rocketqa.encoder.cross_encoder.CrossEncoder):
         save_ce_model(encoder, out)
 
 
