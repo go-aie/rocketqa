@@ -41,7 +41,6 @@ type Record struct {
 	TokenIDs    []int64
 	TextTypeIDs []int64
 	PositionIDs []int64
-	InputMask   []float32
 }
 
 type GeneratorConfig struct {
@@ -75,6 +74,7 @@ func NewGenerator(config GeneratorConfig) (*Generator, error) {
 	}, nil
 }
 
+// GenerateDE generates data for dual encoder.
 func (g *Generator) GenerateDE(e *Example) Data {
 	if g.forCN {
 		e.Clean()
@@ -90,7 +90,7 @@ func (g *Generator) GenerateDE(e *Example) Data {
 	return Data{Query: queryRecord, Para: paraRecord}
 }
 
-// GenerateCE converts the example e into a single Record.
+// GenerateCE generates data for cross encoder.
 func (g *Generator) GenerateCE(e *Example) Record {
 	if g.forCN {
 		e.Clean()
@@ -102,6 +102,43 @@ func (g *Generator) GenerateCE(e *Example) Record {
 	tokensB = append(tokensB, g.tokenizer.Tokenize(e.Para)...)
 
 	return g.generate(tokensA, tokensB, g.maxSeqLength)
+}
+
+// Pad pads the instances to the max sequence length in batch, and generate
+// the corresponding input mask, which is used to avoid attention on paddings.
+func (g *Generator) Pad(insts [][]int64) (padded [][]int64, inputMask [][]float32) {
+	padID := g.tokenizer.vocab["[PAD]"]
+
+	maxLen := 0
+	for _, inst := range insts {
+		if len(inst) > maxLen {
+			maxLen = len(inst)
+		}
+	}
+
+	for _, inst := range insts {
+		paddedInst := inst
+		var mask []float32
+		for i := 0; i < len(inst); i++ {
+			mask = append(mask, 1)
+		}
+
+		diffLen := maxLen - len(inst)
+		if diffLen > 0 {
+			paddedInst = make([]int64, len(inst))
+			copy(paddedInst, inst)
+
+			for i := 0; i < diffLen; i++ {
+				paddedInst = append(paddedInst, padID)
+				mask = append(mask, 0)
+			}
+		}
+
+		padded = append(padded, paddedInst)
+		inputMask = append(inputMask, mask)
+	}
+
+	return
 }
 
 // generate converts tokensA and tokens B into a Record.
@@ -167,16 +204,7 @@ func (g *Generator) generate(tokensA, tokensB []string, maxSeqLength int) Record
 		TokenIDs:    ids,
 		TextTypeIDs: textTypeIDs,
 		PositionIDs: positionIDs,
-		InputMask:   g.generateInputMask(ids),
 	}
-}
-
-func (g *Generator) generateInputMask(ids []int64) []float32 {
-	inputMask := make([]float32, len(ids))
-	for i := range inputMask {
-		inputMask[i] = 1.0
-	}
-	return inputMask
 }
 
 // truncateSeqPair truncates a sequence pair in place to the maximum length.

@@ -21,25 +21,30 @@ func TestCrossEncoder_Rank(t *testing.T) {
 	}
 
 	tests := []struct {
-		inQuery  string
-		inPara   string
-		wantProb float32
+		inQueries  []string
+		inParas    []string
+		inTitles   []string
+		wantScores []float32
 	}{
 		{
-			inQuery:  "你好，世界！",
-			inPara:   "这是一段较长的文本。",
-			wantProb: 0.05041640,
-		},
-		{
-			inQuery:  "Hello, World!",
-			inPara:   "This is a long paragraph.",
-			wantProb: 0.07384859,
+			inQueries: []string{
+				"你好，世界！",
+				"Hello, World!",
+			},
+			inParas: []string{
+				"这是一段较长的文本。",
+				"This is a long paragraph.",
+			},
+			wantScores: []float32{
+				0.05041640,
+				0.07384859,
+			},
 		},
 	}
 	for _, tt := range tests {
-		gotProb := ce.Rank(tt.inQuery, tt.inPara, "")
-		if !cmp.Equal(gotProb, tt.wantProb) {
-			diff := cmp.Diff(gotProb, tt.wantProb)
+		gotScores, _ := ce.Rank(tt.inQueries, tt.inParas, tt.inTitles)
+		if !cmp.Equal(gotScores, tt.wantScores) {
+			diff := cmp.Diff(gotScores, tt.wantScores)
 			t.Errorf("Want - Got: %s", diff)
 		}
 	}

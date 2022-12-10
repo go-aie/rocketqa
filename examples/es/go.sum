@@ -7,3 +7,5 @@ github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi v0.0.0-2022111602343
 github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi v0.0.0-20221116023434-3fa7a736e325/go.mod h1:YldWEunlZgagHtfynS8SGmgCARdMWB+SeK7EtCdWFm8=
 golang.org/x/exp v0.0.0-20221207211629-99ab8fa1c11f h1:90Jq/vvGVDsqj8QqCynjFw9MCerDguSMODLYII416Y8=
 golang.org/x/exp v0.0.0-20221207211629-99ab8fa1c11f/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+gonum.org/v1/gonum v0.12.0 h1:xKuo6hzt+gMav00meVPUlXwSdoEJP46BR+wdxQEFK2o=
+gonum.org/v1/gonum v0.12.0/go.mod h1:73TDxJfAAHeA8Mk9mf8NlIppyhQNo5GLTcYeqgo2lvY=

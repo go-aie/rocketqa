@@ -13,4 +13,5 @@ require (
 require (
 	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
 	github.com/paddlepaddle/paddle/paddle/fluid/inference/goapi v0.0.0-20221116023434-3fa7a736e325 // indirect
+	gonum.org/v1/gonum v0.12.0 // indirect
 )

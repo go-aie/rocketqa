@@ -14,29 +14,29 @@ func TestDualEncoder_EncodeQuery(t *testing.T) {
 	de := newDualEncoder(t)
 
 	tests := []struct {
-		inType string
-		inText string
+		inType    string
+		inQueries []string
 	}{
 		{
 			inType: "query",
-			inText: "你好，世界！",
-		},
-		{
-			inType: "query",
-			inText: "Hello, World!",
+			inQueries: []string{
+				"你好，世界！",
+				"Hello, World!",
+			},
 		},
 	}
 	for _, tt := range tests {
-		gotRaw := de.EncodeQuery(tt.inText)
-		var gotEmb []string
-		for _, v := range gotRaw {
-			gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
-		}
+		for i, vector := range de.EncodeQuery(tt.inQueries) {
+			var gotEmb []string
+			for _, v := range vector {
+				gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
+			}
 
-		wantEmb := getEmbedding(t, tt.inType, tt.inText)
-		if !cmp.Equal(gotEmb, wantEmb) {
-			diff := cmp.Diff(gotEmb, wantEmb)
-			t.Errorf("Want - Got: %s", diff)
+			wantEmb := getEmbedding(t, tt.inType, tt.inQueries[i])
+			if !cmp.Equal(gotEmb, wantEmb) {
+				diff := cmp.Diff(gotEmb, wantEmb)
+				t.Errorf("Want - Got: %s", diff)
+			}
 		}
 	}
 }
@@ -45,29 +45,31 @@ func TestDualEncoder_EncodePara(t *testing.T) {
 	de := newDualEncoder(t)
 
 	tests := []struct {
-		inType string
-		inText string
+		inType   string
+		inParas  []string
+		inTitles []string
 	}{
 		{
 			inType: "para",
-			inText: "这是一段较长的文本。",
-		},
-		{
-			inType: "para",
-			inText: "This is a long paragraph.",
+			inParas: []string{
+				"这是一段较长的文本。",
+				"This is a long paragraph.",
+			},
 		},
 	}
 	for _, tt := range tests {
-		gotRaw := de.EncodePara(tt.inText, "")
-		var gotEmb []string
-		for _, v := range gotRaw {
-			gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
-		}
+		vectors, _ := de.EncodePara(tt.inParas, tt.inTitles)
+		for i, vector := range vectors {
+			var gotEmb []string
+			for _, v := range vector {
+				gotEmb = append(gotEmb, fmt.Sprintf("%.8f", v))
+			}
 
-		wantEmb := getEmbedding(t, tt.inType, tt.inText)
-		if !cmp.Equal(gotEmb, wantEmb) {
-			diff := cmp.Diff(gotEmb, wantEmb)
-			t.Errorf("Want - Got: %s", diff)
+			wantEmb := getEmbedding(t, tt.inType, tt.inParas[i])
+			if !cmp.Equal(gotEmb, wantEmb) {
+				diff := cmp.Diff(gotEmb, wantEmb)
+				t.Errorf("Want - Got: %s", diff)
+			}
 		}
 	}
 }

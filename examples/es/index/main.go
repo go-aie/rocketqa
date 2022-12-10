@@ -45,10 +45,16 @@ func (i *Indexer) Index(index string, items []Item) error {
 		return err
 	}
 
-	ctx := context.Background()
+	var paras, titles []string
+	for _, item := range items {
+		paras = append(paras, item.Para)
+		titles = append(titles, item.Title)
+	}
+	vectors, _ := i.de.EncodePara(paras, titles)
 
+	ctx := context.Background()
 	for idx, item := range items {
-		vector := i.de.EncodePara(item.Para, item.Title).Unitize().ToFloat64()
+		vector := vectors[idx].Norm().ToFloat64()
 
 		b, err := json.Marshal(map[string]interface{}{
 			"title":     item.Title,

@@ -40,7 +40,8 @@ func NewQuerier(es *elasticsearch.Client, de *rocketqa.DualEncoder, ce *rocketqa
 }
 
 func (q *Querier) Search(index, query string) []*Candidate {
-	vector := q.de.EncodeQuery(query).Unitize().ToFloat64()
+	vectors := q.de.EncodeQuery([]string{query})
+	vector := vectors[0].Norm().ToFloat64()
 
 	ks := knnsearch.New(q.es)
 	ks.Index(index).Request(&knnsearch.Request{
@@ -81,9 +82,20 @@ func (q *Querier) Search(index, query string) []*Candidate {
 }
 
 func (q *Querier) Sort(query string, candidates []*Candidate) {
+	var queries []string
+	var paras []string
+	var titles []string
 	for _, c := range candidates {
-		c.Score = q.ce.Rank(query, c.Para, "")
+		queries = append(queries, query)
+		paras = append(paras, c.Para)
+		titles = append(titles, c.Title)
 	}
+
+	scores, _ := q.ce.Rank(queries, paras, titles)
+	for i, score := range scores {
+		candidates[i].Score = score
+	}
+
 	slices.SortFunc(candidates, func(a, b *Candidate) bool {
 		return a.Score > b.Score
 	})
@@ -145,13 +157,13 @@ func main() {
 		candidates := querier.Search(indexName, query)
 		fmt.Println("Candidates:")
 		for _, c := range candidates {
-			fmt.Printf("- %s\n", c.Para)
+			fmt.Printf("%s\t%s\n", c.Title, c.Para)
 		}
 
 		fmt.Println("Answers:")
 		querier.Sort(query, candidates)
-		for i, c := range candidates {
-			fmt.Printf("%d %s\n", i, c.Para)
+		for _, c := range candidates {
+			fmt.Printf("%s\t%s\t%v\n", c.Title, c.Para, c.Score)
 		}
 
 		fmt.Print("Query: ")
