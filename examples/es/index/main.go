@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -31,7 +30,7 @@ func NewIndexer(es *elasticsearch.Client, de *rocketqa.DualEncoder) *Indexer {
 	}
 }
 
-func (i *Indexer) Index(index string, qpts rocketqa.QPTs) error {
+func (i *Indexer) Index(index string, qptsC <-chan rocketqa.QPTs) error {
 	bulk, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Client: i.es,
 		Index:  index,
@@ -40,29 +39,30 @@ func (i *Indexer) Index(index string, qpts rocketqa.QPTs) error {
 		return err
 	}
 
-	vectors, _ := i.de.EncodePara(qpts.P(), qpts.T())
-
 	ctx := context.Background()
-	for idx, item := range qpts {
-		vector := vectors[idx].Norm().ToFloat64()
 
-		b, err := json.Marshal(map[string]interface{}{
-			"title":     item.Title,
-			"paragraph": item.Para,
-			"vector":    vector,
-		})
-		if err != nil {
-			return err
-		}
+	var baseIdx int
+	for qpts := range qptsC {
+		vectors, _ := i.de.EncodePara(qpts.P(), qpts.T())
 
-		err = bulk.Add(
-			ctx,
-			esutil.BulkIndexerItem{
+		for idx, item := range qpts {
+			vector := vectors[idx].Norm().ToFloat64()
+
+			b, err := json.Marshal(map[string]interface{}{
+				"title":     item.Title,
+				"paragraph": item.Para,
+				"vector":    vector,
+			})
+			if err != nil {
+				return err
+			}
+
+			item := esutil.BulkIndexerItem{
 				Action:     "index",
-				DocumentID: strconv.Itoa(idx + 1),
+				DocumentID: strconv.Itoa(baseIdx + idx + 1),
 				Body:       bytes.NewReader(b),
 				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
-					fmt.Printf("[%d] %s test/%s\n", res.Status, res.Result, item.DocumentID)
+					log.Printf("[%d] %s test/%s\n", res.Status, res.Result, item.DocumentID)
 				},
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
@@ -71,24 +71,44 @@ func (i *Indexer) Index(index string, qpts rocketqa.QPTs) error {
 						log.Printf("ERROR: %s: %s\n", res.Error.Type, res.Error.Reason)
 					}
 				},
-			},
-		)
-		if err != nil {
-			return err
+			}
+			if err = bulk.Add(ctx, item); err != nil {
+				return err
+			}
 		}
+
+		baseIdx += len(qpts)
 	}
 
 	return bulk.Close(ctx)
 }
 
-func getQPTs(dataFile string) (rocketqa.QPTs, error) {
-	file, err := os.Open(dataFile)
+type Reader struct {
+	C chan rocketqa.QPTs
+
+	dataFile  string
+	batchSize int
+}
+
+func NewReader(dataFile string, batchSize int) *Reader {
+	if batchSize <= 0 {
+		batchSize = 1
+	}
+	return &Reader{
+		C:         make(chan rocketqa.QPTs),
+		dataFile:  dataFile,
+		batchSize: batchSize,
+	}
+}
+
+func (r *Reader) Read() {
+	file, err := os.Open(r.dataFile)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	defer file.Close()
 
-	var qpts rocketqa.QPTs
+	var qpts []rocketqa.QPT
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -103,13 +123,28 @@ func getQPTs(dataFile string) (rocketqa.QPTs, error) {
 			Title: parts[0],
 			Para:  parts[1],
 		})
+
+		if len(qpts) == r.batchSize {
+			// Reach the batch size, copy and send all the buffered records.
+			temp := make([]rocketqa.QPT, r.batchSize)
+			copy(temp, qpts)
+			r.C <- temp
+
+			// Clear the buffer.
+			qpts = qpts[:0]
+		}
+	}
+
+	// Send all the remaining records, if any.
+	if len(qpts) > 0 {
+		r.C <- qpts
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
-	return qpts, nil
+	close(r.C)
 }
 
 func main() {
@@ -123,11 +158,6 @@ func main() {
 	}
 	if dataFile == "" {
 		log.Fatalf(`argument "data" is required`)
-	}
-
-	qpts, err := getQPTs(dataFile)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
@@ -155,8 +185,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	reader := NewReader(dataFile, 100)
+	go reader.Read()
+
 	indexer := NewIndexer(es, de)
-	if err := indexer.Index(indexName, qpts); err != nil {
+	if err := indexer.Index(indexName, reader.C); err != nil {
 		log.Fatal(err)
 	}
 }
