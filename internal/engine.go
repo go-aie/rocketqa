@@ -8,40 +8,46 @@ import (
 
 // Engine is an inference engine.
 type Engine struct {
-	predictor *paddle.Predictor
+	predictorPool *PredictorPool
 }
 
-func NewEngine(model, params string) *Engine {
+func NewEngine(model, params string, maxConcurrency int) *Engine {
 	config := paddle.NewConfig()
 	config.SetModel(model, params)
 	return &Engine{
-		predictor: paddle.NewPredictor(config),
+		predictorPool: NewPredictorPool(config, maxConcurrency),
 	}
 }
 
 func (e *Engine) Infer(inputs []Tensor) (outputs []Tensor) {
-	inputNames := e.predictor.GetInputNames()
+	predictor, put := e.predictorPool.Get()
+	defer put()
+
+	inputNames := predictor.GetInputNames()
 	if len(inputs) != len(inputNames) {
 		panic(fmt.Errorf("inputs mismatch the length of %v", inputNames))
 	}
 
 	// Set the inference input.
-	for i, name := range e.predictor.GetInputNames() {
-		inputHandle := e.predictor.GetInputHandle(name)
+	for i, name := range predictor.GetInputNames() {
+		inputHandle := predictor.GetInputHandle(name)
 		inputHandle.Reshape(inputs[i].Shape)
 		inputHandle.CopyFromCpu(inputs[i].Data)
 	}
 
 	// Run the inference engine.
-	e.predictor.Run()
+	predictor.Run()
 
 	// Get the inference output.
-	for _, name := range e.predictor.GetOutputNames() {
-		outputHandle := e.predictor.GetOutputHandle(name)
+	for _, name := range predictor.GetOutputNames() {
+		outputHandle := predictor.GetOutputHandle(name)
 		outputData := make([]float32, numElements(outputHandle.Shape()))
 		outputHandle.CopyToCpu(outputData)
 
-		outputs = append(outputs, Tensor{Shape: outputHandle.Shape(), Data: outputData})
+		outputs = append(outputs, Tensor{
+			Shape: outputHandle.Shape(),
+			Data:  outputData,
+		})
 	}
 
 	return
@@ -63,7 +69,10 @@ func NewInputTensor[E any](value [][]E) Tensor {
 	}
 
 	batchSize, dataSize := len(value), len(value[0])
-	return Tensor{Shape: []int32{int32(batchSize), int32(dataSize), 1}, Data: flattened}
+	return Tensor{
+		Shape: []int32{int32(batchSize), int32(dataSize), 1},
+		Data:  flattened,
+	}
 }
 
 func numElements(shape []int32) int32 {

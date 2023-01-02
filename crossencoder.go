@@ -12,6 +12,7 @@ type CrossEncoderConfig struct {
 	DoLowerCase           bool
 	MaxSeqLength          int
 	ForCN                 bool
+	MaxConcurrency        int // The maximum number of predictors for concurrent inferences.
 }
 
 type CrossEncoder struct {
@@ -31,7 +32,7 @@ func NewCrossEncoder(cfg *CrossEncoderConfig) (*CrossEncoder, error) {
 	}
 
 	return &CrossEncoder{
-		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath),
+		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
 		generator: generator,
 	}, nil
 }

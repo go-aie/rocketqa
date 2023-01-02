@@ -11,7 +11,10 @@ import (
 )
 
 func TestDualEncoder_EncodeQuery(t *testing.T) {
-	de := newDualEncoder(t)
+	de, err := newDualEncoder(1)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	tests := []struct {
 		inType string
@@ -46,7 +49,10 @@ func TestDualEncoder_EncodeQuery(t *testing.T) {
 }
 
 func TestDualEncoder_EncodePara(t *testing.T) {
-	de := newDualEncoder(t)
+	de, err := newDualEncoder(1)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	tests := []struct {
 		inType string
@@ -81,8 +87,84 @@ func TestDualEncoder_EncodePara(t *testing.T) {
 	}
 }
 
-func newDualEncoder(t *testing.T) *rocketqa.DualEncoder {
-	de, err := rocketqa.NewDualEncoder(&rocketqa.DualEncoderConfig{
+func BenchmarkDualEncoder_EncodeQuery(b *testing.B) {
+	inQPTs := rocketqa.QPTs{
+		{
+			Query: "你好，世界！",
+		},
+		{
+			Query: "Hello, World!",
+		},
+	}
+
+	tests := []struct {
+		name           string
+		maxConcurrency int
+	}{
+		{"C-1", 1},
+		{"C-2", 2},
+		{"C-4", 4},
+		{"C-8", 8},
+		{"C-16", 16},
+		{"C-32", 32},
+		{"C-64", 64},
+	}
+	for _, tt := range tests {
+		de, err := newDualEncoder(tt.maxConcurrency)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(tt.name, func(b *testing.B) {
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					_ = de.EncodeQuery(inQPTs.Q())
+				}
+			})
+		})
+	}
+}
+
+func BenchmarkDualEncoder_EncodePara(b *testing.B) {
+	inQPTs := rocketqa.QPTs{
+		{
+			Para: "这是一段较长的文本。",
+		},
+		{
+			Para: "This is a long paragraph.",
+		},
+	}
+
+	tests := []struct {
+		name           string
+		maxConcurrency int
+	}{
+		{"C-1", 1},
+		{"C-2", 2},
+		{"C-4", 4},
+		{"C-8", 8},
+		{"C-16", 16},
+		{"C-32", 32},
+		{"C-64", 64},
+	}
+	for _, tt := range tests {
+		de, err := newDualEncoder(tt.maxConcurrency)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(tt.name, func(b *testing.B) {
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					_, _ = de.EncodePara(inQPTs.P(), inQPTs.T())
+				}
+			})
+		})
+	}
+}
+
+func newDualEncoder(maxConcurrency int) (*rocketqa.DualEncoder, error) {
+	return rocketqa.NewDualEncoder(&rocketqa.DualEncoderConfig{
 		ModelPath:         "./testdata/zh_dureader_de_v2.pdmodel",
 		ParamsPath:        "./testdata/zh_dureader_de_v2.pdiparams",
 		VocabFile:         "./testdata/zh_vocab.txt",
@@ -90,11 +172,8 @@ func newDualEncoder(t *testing.T) *rocketqa.DualEncoder {
 		QueryMaxSeqLength: 32,
 		ParaMaxSeqLength:  384,
 		ForCN:             true,
+		MaxConcurrency:    maxConcurrency,
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return de
 }
 
 func getEmbedding(t *testing.T, typ string, text string) []string {

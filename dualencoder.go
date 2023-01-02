@@ -13,6 +13,7 @@ type DualEncoderConfig struct {
 	QueryMaxSeqLength     int
 	ParaMaxSeqLength      int
 	ForCN                 bool
+	MaxConcurrency        int // The maximum number of predictors for concurrent inferences.
 }
 
 type DualEncoder struct {
@@ -33,7 +34,7 @@ func NewDualEncoder(cfg *DualEncoderConfig) (*DualEncoder, error) {
 	}
 
 	return &DualEncoder{
-		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath),
+		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
 		generator: generator,
 	}, nil
 }
