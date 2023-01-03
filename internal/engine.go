@@ -14,6 +14,8 @@ type Engine struct {
 func NewEngine(model, params string, maxConcurrency int) *Engine {
 	config := paddle.NewConfig()
 	config.SetModel(model, params)
+	config.EnableMemoryOptim(true) // Enable the memory optimization
+
 	return &Engine{
 		predictorPool: NewPredictorPool(config, maxConcurrency),
 	}
@@ -49,6 +51,14 @@ func (e *Engine) Infer(inputs []Tensor) (outputs []Tensor) {
 			Data:  outputData,
 		})
 	}
+
+	// Clear all temporary tensors to release the memory.
+	//
+	// See also:
+	// - https://github.com/PaddlePaddle/Paddle/issues/43346
+	// - https://github.com/PaddlePaddle/PaddleOCR/discussions/6977
+	predictor.ClearIntermediateTensor()
+	predictor.TryShrinkMemory()
 
 	return
 }
