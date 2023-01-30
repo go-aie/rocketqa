@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"runtime"
 	"sync/atomic"
 
 	"github.com/jackc/puddle/v2"
@@ -19,7 +20,7 @@ type PredictorPool struct {
 
 func NewPredictorPool(config *paddle.Config, size int) *PredictorPool {
 	if size < 1 {
-		size = 1
+		size = runtime.NumCPU()
 	}
 
 	var first int64

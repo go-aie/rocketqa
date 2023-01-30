@@ -13,7 +13,9 @@ type DualEncoderConfig struct {
 	QueryMaxSeqLength     int
 	ParaMaxSeqLength      int
 	ForCN                 bool
-	MaxConcurrency        int // The maximum number of predictors for concurrent inferences.
+	// The maximum number of predictors for concurrent inferences.
+	// Defaults to the value of runtime.NumCPU.
+	MaxConcurrency int
 }
 
 type DualEncoder struct {

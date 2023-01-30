@@ -12,7 +12,9 @@ type CrossEncoderConfig struct {
 	DoLowerCase           bool
 	MaxSeqLength          int
 	ForCN                 bool
-	MaxConcurrency        int // The maximum number of predictors for concurrent inferences.
+	// The maximum number of predictors for concurrent inferences.
+	// Defaults to the value of runtime.NumCPU.
+	MaxConcurrency int
 }
 
 type CrossEncoder struct {
