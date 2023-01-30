@@ -31,7 +31,7 @@ func (e *Engine) Infer(inputs []Tensor) (outputs []Tensor) {
 	}
 
 	// Set the inference input.
-	for i, name := range predictor.GetInputNames() {
+	for i, name := range inputNames {
 		inputHandle := predictor.GetInputHandle(name)
 		inputHandle.Reshape(inputs[i].Shape)
 		inputHandle.CopyFromCpu(inputs[i].Data)
@@ -43,13 +43,7 @@ func (e *Engine) Infer(inputs []Tensor) (outputs []Tensor) {
 	// Get the inference output.
 	for _, name := range predictor.GetOutputNames() {
 		outputHandle := predictor.GetOutputHandle(name)
-		outputData := make([]float32, numElements(outputHandle.Shape()))
-		outputHandle.CopyToCpu(outputData)
-
-		outputs = append(outputs, Tensor{
-			Shape: outputHandle.Shape(),
-			Data:  outputData,
-		})
+		outputs = append(outputs, e.getOutputTensor(outputHandle))
 	}
 
 	// Clear all temporary tensors to release the memory.
@@ -61,6 +55,34 @@ func (e *Engine) Infer(inputs []Tensor) (outputs []Tensor) {
 	predictor.TryShrinkMemory()
 
 	return
+}
+
+func (e *Engine) getOutputTensor(handle *paddle.Tensor) Tensor {
+	var data interface{}
+	shape := handle.Shape()
+	length := numElements(shape)
+
+	switch dataType := handle.Type(); dataType {
+	case paddle.Float32:
+		data = make([]float32, length)
+	case paddle.Int32:
+		data = make([]int32, length)
+	case paddle.Int64:
+		data = make([]int64, length)
+	case paddle.Uint8:
+		data = make([]uint8, length)
+	case paddle.Int8:
+		data = make([]int8, length)
+	default:
+		panic(fmt.Errorf("unknown output data type %T", dataType))
+	}
+
+	handle.CopyToCpu(data)
+
+	return Tensor{
+		Shape: shape,
+		Data:  data,
+	}
 }
 
 type Tensor struct {
