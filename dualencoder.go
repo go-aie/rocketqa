@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RussellLuo/go-rocketqa/internal"
+	"github.com/go-aie/paddle"
 )
 
 type DualEncoderConfig struct {
@@ -19,7 +20,7 @@ type DualEncoderConfig struct {
 }
 
 type DualEncoder struct {
-	engine    *internal.Engine
+	engine    *paddle.Engine
 	generator *internal.Generator
 }
 
@@ -36,7 +37,7 @@ func NewDualEncoder(cfg *DualEncoderConfig) (*DualEncoder, error) {
 	}
 
 	return &DualEncoder{
-		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
+		engine:    paddle.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
 		generator: generator,
 	}, nil
 }
@@ -85,7 +86,7 @@ func (de *DualEncoder) EncodePara(paras, titles []string) ([]Vector, error) {
 	return newVectors(m.Rows()), nil
 }
 
-func (de *DualEncoder) getInputs(dataSet []internal.Data) []internal.Tensor {
+func (de *DualEncoder) getInputs(dataSet []internal.Data) []paddle.Tensor {
 	var queryTokenIDs [][]int64
 	var queryTextTypeIDs [][]int64
 	var queryPositionIDs [][]int64
@@ -109,22 +110,22 @@ func (de *DualEncoder) getInputs(dataSet []internal.Data) []internal.Tensor {
 	paraTextTypeIDs, _ = de.generator.Pad(paraTextTypeIDs)
 	paraPositionIDs, _ = de.generator.Pad(paraPositionIDs)
 
-	return []internal.Tensor{
-		internal.NewInputTensor(queryTokenIDs),
-		internal.NewInputTensor(queryTextTypeIDs),
-		internal.NewInputTensor(queryPositionIDs),
-		internal.NewInputTensor(queryInputMasks),
-		internal.NewInputTensor(paraTokenIDs),
-		internal.NewInputTensor(paraTextTypeIDs),
-		internal.NewInputTensor(paraPositionIDs),
-		internal.NewInputTensor(paraInputMasks),
+	return []paddle.Tensor{
+		paddle.NewInputTensor(queryTokenIDs),
+		paddle.NewInputTensor(queryTextTypeIDs),
+		paddle.NewInputTensor(queryPositionIDs),
+		paddle.NewInputTensor(queryInputMasks),
+		paddle.NewInputTensor(paraTokenIDs),
+		paddle.NewInputTensor(paraTextTypeIDs),
+		paddle.NewInputTensor(paraPositionIDs),
+		paddle.NewInputTensor(paraInputMasks),
 	}
 }
 
 type Vector []float32
 
 func (v Vector) Norm() Vector {
-	m := internal.NewMatrix(internal.Tensor{Shape: []int32{1, int32(len(v))}, Data: []float32(v)})
+	m := internal.NewMatrix(paddle.Tensor{Shape: []int32{1, int32(len(v))}, Data: []float32(v)})
 	return m.Norm().RawData()
 }
 

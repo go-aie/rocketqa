@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RussellLuo/go-rocketqa/internal"
+	"github.com/go-aie/paddle"
 )
 
 type CrossEncoderConfig struct {
@@ -18,7 +19,7 @@ type CrossEncoderConfig struct {
 }
 
 type CrossEncoder struct {
-	engine    *internal.Engine
+	engine    *paddle.Engine
 	generator *internal.Generator
 }
 
@@ -34,7 +35,7 @@ func NewCrossEncoder(cfg *CrossEncoderConfig) (*CrossEncoder, error) {
 	}
 
 	return &CrossEncoder{
-		engine:    internal.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
+		engine:    paddle.NewEngine(cfg.ModelPath, cfg.ParamsPath, cfg.MaxConcurrency),
 		generator: generator,
 	}, nil
 }
@@ -72,7 +73,7 @@ func (ce *CrossEncoder) Rank(queries, paras, titles []string) ([]float32, error)
 	return internal.NewMatrix(result).Col(1), nil
 }
 
-func (ce *CrossEncoder) getInputs(records []internal.Record) []internal.Tensor {
+func (ce *CrossEncoder) getInputs(records []internal.Record) []paddle.Tensor {
 	var tokenIDs [][]int64
 	var textTypeIDs [][]int64
 	var positionIDs [][]int64
@@ -87,10 +88,10 @@ func (ce *CrossEncoder) getInputs(records []internal.Record) []internal.Tensor {
 	textTypeIDs, _ = ce.generator.Pad(textTypeIDs)
 	positionIDs, _ = ce.generator.Pad(positionIDs)
 
-	return []internal.Tensor{
-		internal.NewInputTensor(tokenIDs),
-		internal.NewInputTensor(textTypeIDs),
-		internal.NewInputTensor(positionIDs),
-		internal.NewInputTensor(inputMasks),
+	return []paddle.Tensor{
+		paddle.NewInputTensor(tokenIDs),
+		paddle.NewInputTensor(textTypeIDs),
+		paddle.NewInputTensor(positionIDs),
+		paddle.NewInputTensor(inputMasks),
 	}
 }

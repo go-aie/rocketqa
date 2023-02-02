@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/RussellLuo/go-rocketqa/internal"
+	"github.com/go-aie/paddle"
 	"github.com/google/go-cmp/cmp"
 )
 
 func TestMatrix_Norm(t *testing.T) {
 	tests := []struct {
-		inTensor internal.Tensor
+		inTensor paddle.Tensor
 		wantData []float32
 	}{
 		{
-			inTensor: internal.Tensor{
+			inTensor: paddle.Tensor{
 				Shape: []int32{5, 1},
 				Data:  []float32{1, 2, 3, 4, 5},
 			},

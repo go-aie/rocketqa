@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/go-aie/paddle"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -8,7 +9,7 @@ type Matrix struct {
 	m *mat.Dense
 }
 
-func NewMatrix(t Tensor) *Matrix {
+func NewMatrix(t paddle.Tensor) *Matrix {
 	if len(t.Shape) != 2 {
 		panic("t is not a matrix")
 	}

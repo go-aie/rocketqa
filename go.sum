@@ -1,4 +1,6 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/go-aie/paddle v0.0.0-20230201150254-d783e2177e06 h1:f3U94UweNWYasK3UU/fnnmCE7Xw4pFc/0gv+otnsBg8=
+github.com/go-aie/paddle v0.0.0-20230201150254-d783e2177e06/go.mod h1:OGLCPuMZKcDojC6GxwXg9yY0S7V7KQ21ze0+pEUK6zU=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/jackc/puddle/v2 v2.1.3-0.20221228152049-5174aa0023b3 h1:vJUFw9bvNQkoPr/orVUWdJTCx0dxdFfC757ul3dIwxc=
