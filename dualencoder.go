@@ -56,7 +56,7 @@ func (de *DualEncoder) EncodeQuery(queries []string) []Vector {
 	outputs := de.engine.Infer(inputs)
 
 	result := outputs[0] // 0: q_rep, 1: p_rep
-	m := internal.NewMatrix(result)
+	m := paddle.NewMatrix[float32](result)
 	return newVectors(m.Rows())
 }
 
@@ -82,7 +82,7 @@ func (de *DualEncoder) EncodePara(paras, titles []string) ([]Vector, error) {
 	outputs := de.engine.Infer(inputs)
 
 	result := outputs[1] // 0: q_rep, 1: p_rep
-	m := internal.NewMatrix(result)
+	m := paddle.NewMatrix[float32](result)
 	return newVectors(m.Rows()), nil
 }
 
@@ -125,12 +125,12 @@ func (de *DualEncoder) getInputs(dataSet []internal.Data) []paddle.Tensor {
 type Vector []float32
 
 func (v Vector) Norm() Vector {
-	m := internal.NewMatrix(paddle.Tensor{Shape: []int32{1, int32(len(v))}, Data: []float32(v)})
+	m := paddle.NewMatrix[float32](paddle.NewInputTensorFromTwoDimSlice([][]float32{v}))
 	return m.Norm().RawData()
 }
 
 func (v Vector) ToFloat64() []float64 {
-	return internal.Float32To64(v)
+	return paddle.NumberToFloat64(v)
 }
 
 func newVectors(value [][]float32) []Vector {

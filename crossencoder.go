@@ -70,7 +70,7 @@ func (ce *CrossEncoder) Rank(queries, paras, titles []string) ([]float32, error)
 	// We only care the first (also the only one) output.
 	result := outputs[0]
 	// Extract the second column (Assume that joint_training == 0)
-	return internal.NewMatrix(result).Col(1), nil
+	return paddle.NewMatrix[float32](result).Col(1), nil
 }
 
 func (ce *CrossEncoder) getInputs(records []internal.Record) []paddle.Tensor {
