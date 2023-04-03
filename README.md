@@ -1,25 +1,19 @@
-# go-rocketqa
+# rocketqa
 
-[![Go Reference](https://pkg.go.dev/badge/RussellLuo/go-rocketqa/vulndb.svg)][2]
+[![Go Reference](https://pkg.go.dev/badge/go-aie/rocketqa/vulndb.svg)][2]
 
 Go Inference API for [RocketQA][1].
 
 
 ## Installation
 
-1. Install [Paddle Inference Go API][3]
-2. Generate [the inference models](cli/README.md#save-inference-model)
+1. Install `rocketqa`
 
     ```bash
-    $ python3 cli/cli.py save zh_dureader_de_v2 --out-path=testdata/zh_dureader_de_v2
-    $ python3 cli/cli.py save zh_dureader_ce_v2 --out-path=testdata/zh_dureader_ce_v2
+    $ go get -u github.com/go-aie/rocketqa
     ```
-   
-3. Install `go-rocketqa`
 
-    ```bash
-    $ go get -u github.com/RussellLuo/go-rocketqa
-    ```
+2. Install [Paddle Inference Go API][3]
 
 
 ## Documentation
@@ -28,6 +22,13 @@ Check out the [documentation][2].
 
 
 ## Testing and Benchmarking
+
+Generate [the inference models](cli/README.md#save-inference-model):
+
+```bash
+$ python3 cli/cli.py save zh_dureader_de_v2 --out-path=testdata/zh_dureader_de_v2
+$ python3 cli/cli.py save zh_dureader_ce_v2 --out-path=testdata/zh_dureader_ce_v2
+```
 
 Run tests:
 
@@ -39,7 +40,7 @@ $ go test -v -race | grep -E 'go|Test'
 --- PASS: TestDualEncoder_EncodeQuery (0.97s)
 === RUN   TestDualEncoder_EncodePara
 --- PASS: TestDualEncoder_EncodePara (0.77s)
-ok  	github.com/RussellLuo/go-rocketqa	3.094s
+ok  	github.com/go-aie/rocketqa	3.094s
 ```
 
 Run benchmarks:
@@ -48,7 +49,7 @@ Run benchmarks:
 $ go test -bench=. -benchmem | grep -E 'go|Benchmark'
 goos: darwin
 goarch: arm64
-pkg: github.com/RussellLuo/go-rocketqa
+pkg: github.com/go-aie/rocketqa
 BenchmarkCrossEncoder_Rank/C-1-10      	      12	  95231254 ns/op	   21522 B/op	     557 allocs/op
 BenchmarkCrossEncoder_Rank/C-2-10      	      24	  48904571 ns/op	   21224 B/op	     555 allocs/op
 BenchmarkCrossEncoder_Rank/C-4-10      	      49	  25722997 ns/op	   21154 B/op	     554 allocs/op
@@ -70,32 +71,8 @@ BenchmarkDualEncoder_EncodePara/C-8-10          	      75	  15437987 ns/op	   97
 BenchmarkDualEncoder_EncodePara/C-16-10         	      84	  14117255 ns/op	   97148 B/op	     597 allocs/op
 BenchmarkDualEncoder_EncodePara/C-32-10         	      81	  14174034 ns/op	   97116 B/op	     596 allocs/op
 BenchmarkDualEncoder_EncodePara/C-64-10         	      80	  14531767 ns/op	   97123 B/op	     597 allocs/op
-ok  	github.com/RussellLuo/go-rocketqa	55.900s
+ok  	github.com/go-aie/rocketqa	55.900s
 ```
-
-## Known Issues
-
-### BLAS error
-
-When using a high `MaxConcurrency` (e.g. running benchmarks), sometimes you will get a BLAS error:
-
-```
-BLAS : Program is Terminated. Because you tried to allocate too many memory regions.
-```
-
-#### Solution
-
-Set OpenBLAS to use a single thread:
-
-```bash
-export OPENBLAS_NUM_THREADS=1
-export GOTO_NUM_THREADS=1
-export OMP_NUM_THREADS=1
-```
-
-See also:
-- https://github.com/autogluon/autogluon/issues/1020
-- https://groups.google.com/g/cmu-openface/c/CwVFyKJPWP4
 
 
 ## License
@@ -104,5 +81,5 @@ See also:
 
 
 [1]: https://github.com/PaddlePaddle/RocketQA
-[2]: https://pkg.go.dev/github.com/RussellLuo/go-rocketqa
-[3]: https://www.paddlepaddle.org.cn/inference/master/guides/install/go_install.html
+[2]: https://pkg.go.dev/github.com/go-aie/rocketqa
+[3]: https://github.com/go-aie/paddle/tree/main/cmd/paddle
