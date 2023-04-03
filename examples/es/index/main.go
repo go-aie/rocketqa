@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RussellLuo/go-rocketqa"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
+	"github.com/go-aie/rocketqa"
 )
 
 type Indexer struct {

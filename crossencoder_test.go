@@ -3,7 +3,7 @@ package rocketqa_test
 import (
 	"testing"
 
-	"github.com/RussellLuo/go-rocketqa"
+	"github.com/go-aie/rocketqa"
 	"github.com/google/go-cmp/cmp"
 )
 

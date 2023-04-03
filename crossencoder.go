@@ -3,8 +3,8 @@ package rocketqa
 import (
 	"fmt"
 
-	"github.com/RussellLuo/go-rocketqa/internal"
 	"github.com/go-aie/paddle"
+	"github.com/go-aie/rocketqa/internal"
 )
 
 type CrossEncoderConfig struct {

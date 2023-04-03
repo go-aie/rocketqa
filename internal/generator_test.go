@@ -3,7 +3,7 @@ package internal_test
 import (
 	"testing"
 
-	"github.com/RussellLuo/go-rocketqa/internal"
+	"github.com/go-aie/rocketqa/internal"
 	"github.com/google/go-cmp/cmp"
 )
 

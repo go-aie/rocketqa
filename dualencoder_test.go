@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RussellLuo/go-rocketqa"
+	"github.com/go-aie/rocketqa"
 	"github.com/google/go-cmp/cmp"
 )
 

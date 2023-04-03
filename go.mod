@@ -1,4 +1,4 @@
-module github.com/RussellLuo/go-rocketqa
+module github.com/go-aie/rocketqa
 
 go 1.19
 

@@ -11,10 +11,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RussellLuo/go-rocketqa"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/knnsearch"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
+	"github.com/go-aie/rocketqa"
 	"golang.org/x/exp/slices"
 )
 
